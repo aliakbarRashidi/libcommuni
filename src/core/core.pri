@@ -49,6 +49,7 @@ SOURCES += $$PWD/ircmessagefilter.cpp
 SOURCES += $$PWD/ircnetwork.cpp
 SOURCES += $$PWD/ircprotocol.cpp
 
+include(../3rdparty/qca/qca.pri)
 include(../3rdparty/mozilla/mozilla.pri)
 include(../3rdparty/qblowfish/qblowfish.pri)
 
