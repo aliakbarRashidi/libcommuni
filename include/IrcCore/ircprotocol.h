@@ -40,7 +40,7 @@ public:
     QAbstractSocket* socket() const;
 
     virtual void open();
-    virtual void authenticate(bool secure);
+    virtual void authenticate(bool secure, const QString& arg = QString());
 
     virtual void read();
     virtual bool write(const QByteArray& data);

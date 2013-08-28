@@ -50,6 +50,7 @@ SOURCES += $$PWD/ircnetwork.cpp
 SOURCES += $$PWD/ircprotocol.cpp
 
 include(../3rdparty/mozilla/mozilla.pri)
+include(../3rdparty/qblowfish/qblowfish.pri)
 
 # respect the (no_)icu/(no_)uchardet config if specified,
 # otherwise try to automatically detect using pkg-config

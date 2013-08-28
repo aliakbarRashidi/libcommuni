@@ -751,7 +751,7 @@ void IrcConnection::setSaslMechanism(const QString& mechanism)
  */
 QStringList IrcConnection::supportedSaslMechanisms()
 {
-    return QStringList() << QLatin1String("PLAIN");
+    return QStringList() << QLatin1String("PLAIN") << QLatin1String("DH-BLOWFISH");
 }
 
 /*!

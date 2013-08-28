@@ -67,8 +67,8 @@ void IrcProtocolPrivate::processLine(const QByteArray& line)
 
     if (line.startsWith("AUTHENTICATE") && !connection->saslMechanism().isEmpty()) {
         const QList<QByteArray> args = line.split(' ');
-        if (args.count() == 2 && args.at(1) == "+")
-            q->authenticate(true);
+        if (args.count() == 2)
+            q->authenticate(true, args.at(1));
         if (!connection->isConnected())
             connection->sendData("CAP END");
         return;
@@ -239,15 +239,22 @@ void IrcProtocol::open()
     d->connection->sendRaw(QString("USER %1 hostname servername :%2").arg(d->connection->userName(), d->connection->realName()));
 }
 
-void IrcProtocol::authenticate(bool secure)
+#include <qblowfish.h>
+void IrcProtocol::authenticate(bool secure, const QString& arg)
 {
     Q_D(IrcProtocol);
     const QString password = d->connection->password();
     if (!password.isEmpty()) {
         if (secure) {
-            const QByteArray userName = d->connection->userName().toUtf8();
-            const QByteArray data = userName + '\0' + userName + '\0' + password.toUtf8();
-            d->connection->sendData("AUTHENTICATE " + data.toBase64());
+            const QString sasl = d->connection->saslMechanism();
+            if (sasl == "PLAIN" && arg == "+") {
+                const QByteArray userName = d->connection->userName().toUtf8();
+                const QByteArray data = userName + '\0' + userName + '\0' + password.toUtf8();
+                d->connection->sendData("AUTHENTICATE " + data.toBase64());
+            } else if (sasl == "DH-BLOWFISH") {
+                qDebug() << arg;
+                QBlowfish fish(arg.toUtf8());
+            }
         } else {
             d->connection->sendRaw(QString("PASS %1").arg(password));
         }

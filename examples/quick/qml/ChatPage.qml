@@ -21,7 +21,7 @@ SplitView {
 
     IrcConnection {
         id: connection
-        saslMechanism: "plain"
+        saslMechanism: "DH-BLOWFISH"
     }
 
     IrcBufferModel {
