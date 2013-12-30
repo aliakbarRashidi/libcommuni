@@ -11,16 +11,16 @@ SUBDIRS += irccommand
 SUBDIRS += ircmessage
 SUBDIRS += ircnetwork
 
-# IrcModel
-SUBDIRS += ircbuffer
-SUBDIRS += ircbuffermodel
-SUBDIRS += ircchannel
-SUBDIRS += ircuser
-SUBDIRS += ircusermodel
+# TODO: IrcModel
+#SUBDIRS += ircbuffer
+#SUBDIRS += ircbuffermodel
+#SUBDIRS += ircchannel
+#SUBDIRS += ircuser
+#SUBDIRS += ircusermodel
 
 # IrcUtil
 SUBDIRS += irccommandparser
-SUBDIRS += irccompleter
+# TODO: SUBDIRS += irccompleter
 SUBDIRS += irclagtimer
 SUBDIRS += ircpalette
 SUBDIRS += irctextformat

@@ -1,3 +1,4 @@
+#include "ircbase.h"
 #include "ircbuffer.h"
 #include "ircbuffermodel.h"
 #include "ircchannel.h"

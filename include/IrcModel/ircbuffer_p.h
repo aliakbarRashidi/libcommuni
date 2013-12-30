@@ -24,6 +24,7 @@
 IRC_BEGIN_NAMESPACE
 
 class IrcUser;
+class IrcBase;
 class IrcUserModel;
 
 class IrcBufferPrivate
@@ -34,13 +35,15 @@ public:
     IrcBufferPrivate();
     virtual ~IrcBufferPrivate();
 
-    virtual void init(const QString& title, IrcBufferModel* model);
+    virtual void init(const QString& title, IrcConnection* connection, IrcBufferModel* model);
     virtual void connected();
     virtual void disconnected();
 
     void setName(const QString& name);
     void setPrefix(const QString& prefix);
+
     void setModel(IrcBufferModel* model);
+    void setConnection(IrcConnection* connection);
 
     bool processMessage(IrcMessage* message);
 
@@ -63,7 +66,9 @@ public:
     }
 
     IrcBuffer* q_ptr;
+    IrcConnection* connection;
     IrcBufferModel* model;
+    IrcBase* base;
     QString name;
     QString prefix;
     bool persistent;

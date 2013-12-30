@@ -22,6 +22,7 @@
 #include "ircnetwork.h"
 #include "irccommand.h"
 #include "ircuser_p.h"
+#include "ircbase.h"
 #include "irc.h"
 
 IRC_BEGIN_NAMESPACE
@@ -74,11 +75,11 @@ IrcChannelPrivate::~IrcChannelPrivate()
 {
 }
 
-void IrcChannelPrivate::init(const QString& title, IrcBufferModel* m)
+void IrcChannelPrivate::init(const QString& title, IrcConnection* c, IrcBufferModel* m)
 {
-    IrcBufferPrivate::init(title, m);
+    IrcBufferPrivate::init(title, c, m);
 
-    const QStringList chanTypes = m->network()->channelTypes();
+    const QStringList chanTypes = c->network()->channelTypes();
     prefix = getPrefix(title, chanTypes);
     name = channelName(title, chanTypes);
 }
@@ -259,11 +260,12 @@ bool IrcChannelPrivate::renameUser(const QString& from, const QString& to)
 
 void IrcChannelPrivate::setUserMode(const QString& name, const QString& command)
 {
+    Q_Q(IrcChannel);
     if (IrcUser* user = userMap.value(name)) {
         bool add = true;
         QString mode = user->mode();
         QString prefix = user->prefix();
-        const IrcNetwork* network = model->network();
+        const IrcNetwork* network = q->network();
         for (int i = 0; i < command.size(); ++i) {
             QChar c = command.at(i);
             if (c == QLatin1Char('+')) {

@@ -32,7 +32,7 @@ public:
     IrcChannelPrivate();
     virtual ~IrcChannelPrivate();
 
-    virtual void init(const QString& title, IrcBufferModel* model);
+    virtual void init(const QString& title, IrcConnection* connection, IrcBufferModel* model);
     virtual void connected();
     virtual void disconnected();
 

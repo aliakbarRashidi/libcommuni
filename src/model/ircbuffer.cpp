@@ -18,6 +18,7 @@
 #include "ircbuffermodel_p.h"
 #include "ircconnection.h"
 #include "ircchannel.h"
+#include "ircbase_p.h"
 
 IRC_BEGIN_NAMESPACE
 
@@ -57,7 +58,7 @@ IRC_BEGIN_NAMESPACE
 
 #ifndef IRC_DOXYGEN
 IrcBufferPrivate::IrcBufferPrivate()
-    : q_ptr(0), model(0), persistent(false), sticky(false)
+    : q_ptr(0), connection(0), model(0), base(0), persistent(false), sticky(false)
 {
     qRegisterMetaType<IrcBuffer*>();
     qRegisterMetaType<QList<IrcBuffer*> >();
@@ -67,10 +68,11 @@ IrcBufferPrivate::~IrcBufferPrivate()
 {
 }
 
-void IrcBufferPrivate::init(const QString& title, IrcBufferModel* m)
+void IrcBufferPrivate::init(const QString& title, IrcConnection* c, IrcBufferModel* m)
 {
     name = title;
     setModel(m);
+    setConnection(c);
 }
 
 void IrcBufferPrivate::connected()
@@ -93,8 +95,8 @@ void IrcBufferPrivate::setName(const QString& value)
         name = value;
         emit q->nameChanged(name);
         emit q->titleChanged(q->title());
-        if (model)
-            IrcBufferModelPrivate::get(model)->renameBuffer(oldTitle, q->title());
+        if (base)
+            IrcBasePrivate::get(base)->renameBuffer(oldTitle, q->title());
     }
 }
 
@@ -106,14 +108,19 @@ void IrcBufferPrivate::setPrefix(const QString& value)
         prefix = value;
         emit q->prefixChanged(prefix);
         emit q->titleChanged(q->title());
-        if (model)
-            IrcBufferModelPrivate::get(model)->renameBuffer(oldTitle, q->title());
+        if (base)
+            IrcBasePrivate::get(base)->renameBuffer(oldTitle, q->title());
     }
 }
 
-void IrcBufferPrivate::setModel(IrcBufferModel* value)
+void IrcBufferPrivate::setModel(IrcBufferModel* m)
 {
-    model = value;
+    model = m;
+}
+
+void IrcBufferPrivate::setConnection(IrcConnection* c)
+{
+    connection = c;
 }
 
 bool IrcBufferPrivate::processMessage(IrcMessage* message)
@@ -329,6 +336,37 @@ void IrcBuffer::setPrefix(const QString& prefix)
     return d->setPrefix(prefix);
 }
 
+IrcBase* IrcBuffer::base() const
+{
+    Q_D(const IrcBuffer);
+    return d->base;
+}
+
+/*!
+    \property bool IrcBuffer::base
+    This property holds whether the buffer is a base.
+
+    \par Access function:
+    \li bool <b>isBase</b>() const
+
+    \sa toBase()
+ */
+bool IrcBuffer::isBase() const
+{
+    return inherits("IrcBase");
+}
+
+/*!
+    Returns the buffer cast to a IrcBase,
+    if the class is actually a base, \c 0 otherwise.
+
+    \sa \ref base "isBase()"
+*/
+IrcBase* IrcBuffer::toBase()
+{
+    return qobject_cast<IrcBase*>(this);
+}
+
 /*!
     \property bool IrcBuffer::channel
     This property holds whether the buffer is a channel.
@@ -363,7 +401,7 @@ IrcChannel* IrcBuffer::toChannel()
 IrcConnection* IrcBuffer::connection() const
 {
     Q_D(const IrcBuffer);
-    return d->model ? d->model->connection() : 0;
+    return d->connection;
 }
 
 /*!
@@ -375,7 +413,7 @@ IrcConnection* IrcBuffer::connection() const
 IrcNetwork* IrcBuffer::network() const
 {
     Q_D(const IrcBuffer);
-    return d->model ? d->model->network() : 0;
+    return d->connection ? d->connection->network() : 0;
 }
 
 /*!
@@ -487,8 +525,8 @@ void IrcBuffer::setPersistent(bool persistent)
 QVariant IrcBuffer::data(int role) const
 {
     Q_D(const IrcBuffer);
-    if (d->model && role == Qt::DisplayRole)
-        return data(d->model->displayRole());
+    if (d->base && d->base->model() && role == Qt::DisplayRole)
+        return data(d->base->model()->displayRole());
 
     IrcBuffer* buffer = const_cast<IrcBuffer*>(this);
     switch (role) {
@@ -556,8 +594,8 @@ void IrcBuffer::close(const QString& reason)
 {
     Q_UNUSED(reason);
     Q_D(const IrcBuffer);
-    if (d->model)
-        d->model->remove(this);
+    if (d->base)
+        IrcBasePrivate::get(d->base)->removeBuffer(this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

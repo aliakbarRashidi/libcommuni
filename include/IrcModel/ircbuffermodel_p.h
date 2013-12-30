@@ -16,40 +16,27 @@
 #define IRCBUFFERMODEL_P_H
 
 #include "ircbuffer.h"
-#include "ircfilter.h"
 #include "ircbuffermodel.h"
-#include <qpointer.h>
 
 IRC_BEGIN_NAMESPACE
 
-class IrcBufferModelPrivate : public QObject, public IrcMessageFilter, public IrcCommandFilter
+class IrcBase;
+
+class IrcBufferModelPrivate
 {
-    Q_OBJECT
     Q_DECLARE_PUBLIC(IrcBufferModel)
-    Q_INTERFACES(IrcMessageFilter IrcCommandFilter)
 
 public:
     IrcBufferModelPrivate();
 
-    bool messageFilter(IrcMessage* message);
-    bool commandFilter(IrcCommand* command);
+    IrcBase* createBaseHelper(IrcConnection* connection);
+    IrcBuffer* createBufferHelper(IrcConnection* connection, const QString& title);
+    IrcChannel* createChannelHelper(IrcConnection* connection, const QString& title);
 
-    IrcBuffer* createBufferHelper(const QString& title);
-    IrcChannel* createChannelHelper(const QString& title);
+    IrcBase* insertBase(int index, IrcConnection* connection);
+    bool removeBase(IrcConnection* connection);
 
-    IrcBuffer* createBuffer(const QString& title);
-    void destroyBuffer(const QString& title, bool force = false);
-
-    void addBuffer(IrcBuffer* buffer, bool notify = true);
-    void insertBuffer(int index, IrcBuffer* buffer, bool notify = true);
-    void removeBuffer(IrcBuffer* buffer, bool notify = true);
-    bool renameBuffer(const QString& from, const QString& to);
-
-    bool processMessage(const QString& title, IrcMessage* message, bool create = false);
-
-    void _irc_connected();
-    void _irc_disconnected();
-    void _irc_bufferDestroyed(IrcBuffer* buffer);
+    void _irc_baseDestroyed(IrcBase* base);
 
     static IrcBufferModelPrivate* get(IrcBufferModel* model)
     {
@@ -58,15 +45,10 @@ public:
 
     IrcBufferModel* q_ptr;
     Irc::DataRole role;
-    QPointer<IrcConnection> connection;
-    QList<IrcBuffer*> bufferList;
-    QMap<QString, IrcBuffer*> bufferMap;
-    QHash<QString, QString> keys;
-    QStringList channels;
     Irc::SortMethod sortMethod;
     Qt::SortOrder sortOrder;
-    IrcBuffer* bufferProto;
-    IrcChannel* channelProto;
+    QList<IrcBase*> bases;
+    QHash<IrcConnection*, IrcBase*> connections;
 };
 
 IRC_END_NAMESPACE

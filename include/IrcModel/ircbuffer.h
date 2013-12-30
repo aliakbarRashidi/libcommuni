@@ -23,6 +23,7 @@
 
 IRC_BEGIN_NAMESPACE
 
+class IrcBase;
 class IrcChannel;
 class IrcCommand;
 class IrcMessage;
@@ -52,6 +53,11 @@ public:
     QString title() const;
     QString name() const;
     QString prefix() const;
+
+    IrcBase* base() const;
+
+    bool isBase() const;
+    Q_INVOKABLE IrcBase* toBase();
 
     bool isChannel() const;
     Q_INVOKABLE IrcChannel* toChannel();

@@ -22,6 +22,7 @@
 
 IRC_BEGIN_NAMESPACE
 
+class IrcBase;
 class IrcBuffer;
 class IrcChannel;
 class IrcMessage;
@@ -36,36 +37,24 @@ class IRC_MODEL_EXPORT IrcBufferModel : public QAbstractListModel
     Q_PROPERTY(bool empty READ isEmpty NOTIFY emptyChanged)
     Q_PROPERTY(Qt::SortOrder sortOrder READ sortOrder WRITE setSortOrder)
     Q_PROPERTY(Irc::SortMethod sortMethod READ sortMethod WRITE setSortMethod)
-    Q_PROPERTY(QStringList channels READ channels NOTIFY channelsChanged)
     Q_PROPERTY(Irc::DataRole displayRole READ displayRole WRITE setDisplayRole)
-    Q_PROPERTY(QList<IrcBuffer*> buffers READ buffers NOTIFY buffersChanged)
-    Q_PROPERTY(IrcConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
-    Q_PROPERTY(IrcNetwork* network READ network NOTIFY networkChanged)
-    Q_PROPERTY(IrcBuffer* bufferPrototype READ bufferPrototype WRITE setBufferPrototype NOTIFY bufferPrototypeChanged)
-    Q_PROPERTY(IrcChannel* channelPrototype READ channelPrototype WRITE setChannelPrototype NOTIFY channelPrototypeChanged)
+    Q_PROPERTY(QList<IrcBase*> bases READ bases NOTIFY basesChanged)
 
 public:
     explicit IrcBufferModel(QObject* parent = 0);
     virtual ~IrcBufferModel();
 
-    IrcConnection* connection() const;
-    void setConnection(IrcConnection* connection);
-
-    IrcNetwork* network() const;
-
     int count() const;
     bool isEmpty() const;
-    QStringList channels() const;
-    QList<IrcBuffer*> buffers() const;
-    Q_INVOKABLE IrcBuffer* get(int index) const;
-    Q_INVOKABLE IrcBuffer* find(const QString& title) const;
-    Q_INVOKABLE bool contains(const QString& title) const;
-    Q_INVOKABLE int indexOf(IrcBuffer* buffer) const;
+    QList<IrcBase*> bases() const;
 
-    Q_INVOKABLE IrcBuffer* add(const QString& title);
-    Q_INVOKABLE void add(IrcBuffer* buffer);
-    Q_INVOKABLE void remove(const QString& title);
-    Q_INVOKABLE void remove(IrcBuffer* buffer);
+    Q_INVOKABLE IrcBase* get(int index) const;
+    Q_INVOKABLE int indexOf(IrcBase* parent) const;
+    Q_INVOKABLE IrcBase* find(IrcConnection* connection) const;
+
+    Q_INVOKABLE IrcBase* add(IrcConnection* connection);
+    Q_INVOKABLE IrcBase* insert(int index, IrcConnection* connection);
+    Q_INVOKABLE void remove(IrcConnection* connection);
 
     Qt::SortOrder sortOrder() const;
     void setSortOrder(Qt::SortOrder order);
@@ -84,14 +73,8 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     QModelIndex index(int row, int column = 0, const QModelIndex& parent = QModelIndex()) const;
 
-    IrcBuffer* bufferPrototype() const;
-    void setBufferPrototype(IrcBuffer* prototype);
-
-    IrcChannel* channelPrototype() const;
-    void setChannelPrototype(IrcChannel* prototype);
-
-    Q_INVOKABLE QByteArray saveState(int version = 0) const;
-    Q_INVOKABLE bool restoreState(const QByteArray& state, int version = 0);
+//    Q_INVOKABLE QByteArray saveState(int version = 0) const;
+//    Q_INVOKABLE bool restoreState(const QByteArray& state, int version = 0);
 
 public Q_SLOTS:
     void clear();
@@ -101,36 +84,29 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged(int count);
     void emptyChanged(bool empty);
-    void added(IrcBuffer* buffer);
-    void removed(IrcBuffer* buffer);
-    void aboutToBeAdded(IrcBuffer* buffer);
-    void aboutToBeRemoved(IrcBuffer* buffer);
-    void buffersChanged(const QList<IrcBuffer*>& buffers);
-    void channelsChanged(const QStringList& channels);
-    void connectionChanged(IrcConnection* connection);
-    void networkChanged(IrcNetwork* network);
-    void messageIgnored(IrcMessage* message);
-    void bufferPrototypeChanged(IrcBuffer* prototype);
-    void channelPrototypeChanged(IrcChannel* prototype);
+    void added(IrcBase* base);
+    void removed(IrcBase* base);
+    void basesChanged(const QList<IrcBase*>& bases);
     void destroyed(IrcBufferModel* model);
 
 protected Q_SLOTS:
-    virtual IrcBuffer* createBuffer(const QString& title);
-    virtual IrcChannel* createChannel(const QString& title);
+    virtual IrcBase* createBase(IrcConnection* connection);
+    virtual IrcBuffer* createBuffer(IrcConnection* connection, const QString& title);
+    virtual IrcChannel* createChannel(IrcConnection* connection, const QString& title);
 
 protected:
     virtual bool lessThan(IrcBuffer* one, IrcBuffer* another, Irc::SortMethod method) const;
 
 private:
+    friend class IrcBase;
+    friend class IrcBasePrivate;
     friend class IrcBufferLessThan;
     friend class IrcBufferGreaterThan;
     QScopedPointer<IrcBufferModelPrivate> d_ptr;
     Q_DECLARE_PRIVATE(IrcBufferModel)
     Q_DISABLE_COPY(IrcBufferModel)
 
-    Q_PRIVATE_SLOT(d_func(), void _irc_connected())
-    Q_PRIVATE_SLOT(d_func(), void _irc_disconnected())
-    Q_PRIVATE_SLOT(d_func(), void _irc_bufferDestroyed(IrcBuffer*))
+    Q_PRIVATE_SLOT(d_func(), void _irc_baseDestroyed(IrcBase*))
 };
 
 IRC_END_NAMESPACE

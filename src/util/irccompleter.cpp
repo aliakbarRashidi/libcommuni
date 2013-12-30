@@ -19,6 +19,7 @@
 #include "ircusermodel.h"
 #include "ircnetwork.h"
 #include "ircchannel.h"
+#include "ircbase.h"
 #include "ircuser.h"
 
 #include <QTextBoundaryFinder>
@@ -272,7 +273,12 @@ QList<IrcCompletion> IrcCompleterPrivate::completeWords(const QString& text, int
         if (isChannel && pfx > 0)
             prefix = text.mid(bounds.first - pfx, pfx);
 
-        QList<IrcBuffer*> buffers = buffer->model()->buffers();
+        QList<IrcBuffer*> buffers;
+        // TODO:
+        if (IrcBase* base = buffer->toBase())
+            buffers = base->buffers();
+        else
+            buffers = buffer->base()->buffers();
         buffers.move(buffers.indexOf(buffer), 0); // promote the current buffer
         foreach (IrcBuffer* buffer, buffers) {
             const QString title = buffer->title();
