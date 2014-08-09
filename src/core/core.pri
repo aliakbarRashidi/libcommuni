@@ -52,6 +52,7 @@ SOURCES += $$PWD/ircnetwork.cpp
 SOURCES += $$PWD/ircprotocol.cpp
 
 include(../3rdparty/mozilla/mozilla.pri)
+include(../3rdparty/openaes/openaes.pri)
 
 CONFIG(icu, icu|no_icu) {
     DEFINES += HAVE_ICU
